@@ -82,7 +82,6 @@ describe('GET /todos', () => {
 });
 
 describe('GET /todos/:id', () => {
- 
     it('should return todo doc', (done) => {
     
            request(app)

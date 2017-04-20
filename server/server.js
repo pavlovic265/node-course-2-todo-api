@@ -16,12 +16,21 @@ app.post('/todos', (req, res) => {
         text: req.body.text
     });
     todo.save()
+        .then((todos) => {
+            res.status(200).send(todos);
+        },(err) => {
+            res.status(400).send(err);
+        });
+
+});
+
+app.get('/todos', (req, res) => {
+    Todo.find()
         .then((doc) => {
             res.status(200).send(doc);
         },(err) => {
             res.status(400).send(err);
         });
-
 });
 
 app.listen(port, () => {

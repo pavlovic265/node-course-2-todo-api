@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 
@@ -33,7 +34,7 @@ app.get('/todos', (req, res) => {
         },(err) => {
             res.status(400).send(err);
         });
-});
+}); 
 
 app.get('/todos/:id', (req, res) => {
 
@@ -53,7 +54,6 @@ app.get('/todos/:id', (req, res) => {
             res.status(400).send();
         });
 });
-
 
 app.delete('/todos/:id', (req, res) => {
     var id = req.params.id;
@@ -100,6 +100,33 @@ app.patch('/todos/:id', (req, res) => {
         .catch((err) => {
             res.status(404).send();
         });
+});
+
+
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+    
+    // User.findByToken //model methofs
+    // user.generateAuthToken //instanc methods
+
+    user.save()
+        .then(() => {
+            return user.generateAuthToken()
+        })
+        .then((token) => {
+            res.header('x-auth', token)
+                .status(200)
+                .send(user);
+        })
+        .catch((err) => {
+            res.status(400).send(err);
+        });
+});
+
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.status(200).send(req.user);            
 });
 
 app.listen(process.env.PORT, () => {

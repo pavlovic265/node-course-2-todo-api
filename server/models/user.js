@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jsw = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
+
 
 var UserSchema = mongoose.Schema({
     email: {
@@ -36,6 +38,7 @@ var UserSchema = mongoose.Schema({
         }
     }]
 });
+
 
 //metoda toJSON je metodakoja nam vraca objekat iz baze
 //Ovim override-jemo metodu da bi vratili samo odredjene stvari
@@ -77,6 +80,21 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.access': 'auth',
     });
 };
+
+UserSchema.pre('save', function(next) {
+    var user = this;
+
+    if(user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => { 
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('User', UserSchema);
 
